@@ -16,10 +16,22 @@ const client = new line.Client(config);
 const sessions = {}; 
 // sessions[groupId] = { isOpen: true, orders: { userId: [] } }
 
-const MENU = {
-  "ข้าวมันไก่": 50,
-  "ข้าวหมูแดง": 60,
-  "ชาเย็น": 25,
+const MENU_CONTENT = {
+  "ลิ้นจี่โซดา": [],
+  "สตอเบอรี่โซดา": [],
+  "แดงโซดา": [],
+  "แดงมะนาวโซดา": [],
+  "นมชมพู": [],
+  "โกโก้": [],
+  "ชาเย็น": [],
+  "อเมริกาโน่": [],
+  "อเมริกาโน่น้ำส้ม": [],
+  "อเมริกาโน่มะพร้าว": [],
+  "อเมริกาโน่ special": [],
+  "ลาเต้": [],
+  "คาปูชิโน่": [],
+  "เอสเพรสโซ่": [],
+  "ม๊อคค่า": []
 };
 
 /* ===== WEBHOOK ===== */
@@ -34,87 +46,89 @@ app.post("/webhook", line.middleware(config), (req, res) => {
 
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
-  if (event.type !== "message" || event.message.type !== "text") return;
+  // if (event.type !== "message" || event.message.type !== "text") return;
 
-  const text = event.message.text.trim();
-  const { groupId, userId } = event.source;
+  // const text = event.message.text.trim();
+  // const { groupId, userId } = event.source;
 
-  if (!groupId) {
-    return reply(event.replyToken, "❌ ใช้ได้เฉพาะในไลน์กลุ่ม");
-  }
 
-  // init group
-  if (!sessions[groupId]) {
-    sessions[groupId] = { isOpen: false, orders: {} };
-  }
 
-  const group = sessions[groupId];
+  // if (!groupId) {
+  //   return reply(event.replyToken, "❌ ใช้ได้เฉพาะในไลน์กลุ่ม");
+  // }
 
-  /* ===== COMMANDS ===== */
-  if (text === "@bot เปิดออเดอร์") {
-    group.isOpen = true;
-    group.orders = {};
-    return reply(event.replyToken, "🟢 เปิดรับออเดอร์แล้ว");
-  }
+  // // init group
+  // if (!sessions[groupId]) {
+  //   sessions[groupId] = { isOpen: false, orders: {} };
+  // }
 
-  if (text === "@bot ปิดออเดอร์") {
-    group.isOpen = false;
-    return reply(event.replyToken, "🔴 ปิดออเดอร์แล้ว");
-  }
+  // const group = sessions[groupId];
 
-  if (text === "เมนู") {
-    const menuText = Object.entries(MENU)
-      .map(([k, v]) => `${k} ${v} บาท`)
-      .join("\n");
-    return reply(event.replyToken, `📋 เมนู\n${menuText}`);
-  }
+  // /* ===== COMMANDS ===== */
+  // if (text === "@bot เปิดออเดอร์") {
+  //   group.isOpen = true;
+  //   group.orders = {};
+  //   return reply(event.replyToken, "🟢 เปิดรับออเดอร์แล้ว");
+  // }
 
-  if (text === "ของฉัน") {
-    const items = group.orders[userId] || [];
-    if (items.length === 0) {
-      return reply(event.replyToken, "🧾 ยังไม่มีรายการของคุณ");
-    }
+  // if (text === "@bot ปิดออเดอร์") {
+  //   group.isOpen = false;
+  //   return reply(event.replyToken, "🔴 ปิดออเดอร์แล้ว");
+  // }
 
-    let total = 0;
-    const lines = items.map(i => {
-      total += i.price * i.qty;
-      return `- ${i.menu} x${i.qty} = ${i.price * i.qty}`;
-    });
+  // // if (text === "เมนู") {
+  // //   const menuText = Object.entries(MENU)
+  // //     .map(([k, v]) => `${k} ${v} บาท`)
+  // //     .join("\n");
+  // //   return reply(event.replyToken, `📋 เมนู\n${menuText}`);
+  // // }
 
-    return reply(
-      event.replyToken,
-      `🧾 บิลของคุณ\n${lines.join("\n")}\nรวม ${total} บาท`
-    );
-  }
+  // if (text === "ของฉัน") {
+  //   const items = group.orders[userId] || [];
+  //   if (items.length === 0) {
+  //     return reply(event.replyToken, "🧾 ยังไม่มีรายการของคุณ");
+  //   }
 
-  /* ===== ADD ORDER ===== */
-  if (!group.isOpen) {
-    return reply(event.replyToken, "⛔ ยังไม่เปิดรับออเดอร์");
-  }
+  //   let total = 0;
+  //   const lines = items.map(i => {
+  //     total += i.price * i.qty;
+  //     return `- ${i.menu} x${i.qty} = ${i.price * i.qty}`;
+  //   });
 
-  // format: เมนู จำนวน
-  const parts = text.split(" ");
-  const menuName = parts[0];
-  const qty = parseInt(parts[1] || "1", 10);
+  //   return reply(
+  //     event.replyToken,
+  //     `🧾 บิลของคุณ\n${lines.join("\n")}\nรวม ${total} บาท`
+  //   );
+  // }
 
-  if (!MENU[menuName]) {
-    return reply(event.replyToken, "❓ ไม่พบเมนูนี้ (พิมพ์ 'เมนู' เพื่อดูรายการ)");
-  }
+  // /* ===== ADD ORDER ===== */
+  // if (!group.isOpen) {
+  //   return reply(event.replyToken, "⛔ ยังไม่เปิดรับออเดอร์");
+  // }
 
-  if (!group.orders[userId]) {
-    group.orders[userId] = [];
-  }
+  // // format: เมนู จำนวน
+  // const parts = text.split(" ");
+  // const menuName = parts[0];
+  // const qty = parseInt(parts[1] || "1", 10);
 
-  group.orders[userId].push({
-    menu: menuName,
-    qty,
-    price: MENU[menuName],
-  });
+  // if (!MENU[menuName]) {
+  //   return reply(event.replyToken, "❓ ไม่พบเมนูนี้ (พิมพ์ 'เมนู' เพื่อดูรายการ)");
+  // }
 
-  return reply(
-    event.replyToken,
-    `✅ เพิ่ม ${menuName} x${qty} (${MENU[menuName] * qty} บาท)`
-  );
+  // if (!group.orders[userId]) {
+  //   group.orders[userId] = [];
+  // }
+
+  // group.orders[userId].push({
+  //   menu: menuName,
+  //   qty,
+  //   price: MENU[menuName],
+  // });
+
+  // return reply(
+  //   event.replyToken,
+  //   `✅ เพิ่ม ${menuName} x${qty} (${MENU[menuName] * qty} บาท)`
+  // );
 }
 
 /* ===== REPLY ===== */
