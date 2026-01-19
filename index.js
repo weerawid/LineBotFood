@@ -42,7 +42,6 @@ app.post('/test-webhook', async (req, res) => {
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
-
   const lines = event.message.text.split('\n')
   var order_list = {}
   
@@ -83,11 +82,11 @@ async function handleEvent(event) {
   const order_list_key = Object.keys(order_list)
   line_messages.push('สรุปรายการขนมและเครื่องดื่ม')
   for(let i=0; i < order_list_key.length; i++) {
-    const order = order_list['order_list_key']
+    const order = order_list[order_list_key[i]]
     order_total = order_total + order.total
-    line_messages.push(f` - ${order.name}[${order.qty}]: ${order.total}`)
+    line_messages.push(` - ${order.name}[${order.qty}]: ${order.total}`)
   }
-  line_messages.push(f`ยอดรวมทั้งหมด: ${order_total}`)
+  line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
   reply(event.replyToken, line_messages.join('\n'))
 }
 

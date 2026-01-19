@@ -1,9 +1,20 @@
+import fs from 'fs';
+import path from 'path';
+import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
+import 'dotenv/config';
+
+const decoded = Buffer
+  .from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64')
+  .toString('utf8');
+
+const credPath = '/tmp/credentials.json';
+fs.writeFileSync(credPath, decoded);
 
 async function getSheetData(range) {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: 'credentials.json',
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+  const auth = new GoogleAuth({
+    keyFile: credPath,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
   const sheets = google.sheets({ version: 'v4', auth });
