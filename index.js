@@ -33,6 +33,7 @@ const menuFuse = new Fuse(menuFilter, {
 
 /* ===== WEBHOOK ===== */
 app.post('/webhook', line.middleware(config), (req, res) => {
+  forwardWebHook()
   Promise.all(req.body.events.map(handleEvent))
     .then(() => res.end())
     .catch(err => {
@@ -50,7 +51,20 @@ app.post('/test-webhook', async (req, res) => {
   }
 
   res.sendStatus(200);
+  await forwardWebHook(req, res)
 });
+
+async function forwardWebHook(req, res) {
+  const headers = {
+    'content-type': 'application/json'
+  };
+
+  fetch(process.env.WEB_HOOK_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(req.body)
+  }).catch(console.error);
+}
 
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
@@ -94,7 +108,7 @@ async function handleEvent(event) {
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
   // console.log(line_messages.join('\n'))
-  return reply(event.replyToken, line_messages.join('\n'))
+  // return reply(event.replyToken, line_messages.join('\n'))
 }
 
 function normalizeThai(text) {
