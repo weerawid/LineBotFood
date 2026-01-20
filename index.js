@@ -32,38 +32,33 @@ const menuFuse = new Fuse(menuFilter, {
 })
 
 /* ===== WEBHOOK ===== */
-app.post('/webhook', line.middleware(config), (req, res) => {
-  forwardWebHook()
+app.use('/webhook', line.middleware(config));
+
+app.post('/webhook', (req, res) => {
+  res.sendStatus(200);
   Promise.all(req.body.events.map(handleEvent))
-    .then(() => res.end())
-    .catch(err => {
-      console.error(err);
-      res.status(500).end();
-    });
+    .catch(console.error);
+  forwardWebHook(req.body);
 });
 
 app.use(express.json());
 
 app.post('/test-webhook', async (req, res) => {
-  const events = req.body?.events || [];
-  for (const event of events) {
-    await handleEvent(event);
-  }
-
   res.sendStatus(200);
-  await forwardWebHook(req, res)
+
+  const events = req.body?.events || [];
+  Promise.all(events.map(handleEvent))
+    .catch(console.error);
+
+  forwardWebHook(req.body);
 });
 
-async function forwardWebHook(req, res) {
-  const headers = {
-    'content-type': 'application/json'
-  };
-
-  fetch(process.env.WEB_HOOK_URL, {
+async function forwardWebHook(body) {
+  await fetch(process.env.WEB_HOOK_URL, {
     method: 'POST',
-    headers,
-    body: JSON.stringify(req.body)
-  }).catch(console.error);
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 }
 
 /* ===== MAIN LOGIC ===== */
