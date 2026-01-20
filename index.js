@@ -1,4 +1,5 @@
 import express from 'express';
+import Fuse from 'fuse.js';
 import * as line from '@line/bot-sdk';
 import * as sheet from './google/google_sheet.js';
 
@@ -17,6 +18,18 @@ const client = new line.Client(config);
 const sessions = {}; 
 
 const menuList = await sheet.getMenuList()
+const menuFilter = menuList.map((item, idx)=>{
+  return {
+    name: item.order_list,
+    price: item.price,
+    keywords: item.key_words.split(',')
+  }
+})
+const menuFuse = new Fuse(menuFilter, {
+  keys: ['keywords'],
+  threshold: 0.1,
+  ignoreLocation: true
+})
 
 /* ===== WEBHOOK ===== */
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -50,29 +63,22 @@ async function handleEvent(event) {
     const list = menuList.sort((a, b) => b.key_words.length - a.key_words.length)
     const text = lines[i]
     
-    menuLoop:
-    for (let j = 0; j < list.length; j++) {
-      const menuName = list[j].order_list
-      const price = list[j].price
-      const key_word_list = list[j].key_words.split(',') ?? []
+    const find_menu = findMenuSafe(text, menuFilter)
+    console.log(text)
+    console.log(find_menu)
+    // console.log(menuFilter)
+    if (find_menu != null) {
+      const menuName = find_menu.name
+      const price = find_menu.price
+      const match = text.match(/(\d+)(?!\s*[%.\d])/);
+      const qty = match ? parseInt(match[1], 10) : 1;
+      const order_count = (order_list[menuName]?.qty ?? 0) + qty
 
-      keywordLoop:
-      for (let k = 0; k < key_word_list.length; k++) {
-        if (text.includes(key_word_list[k].trim())) {
-          const match = text.match(/(\d+)(?!\s*[%.\d])/);
-          const qty = match ? parseInt(match[1], 10) : 1;
-          const order_count = (order_list[menuName]?.qty ?? 0) + qty
-
-          order_list[menuName] = {
-            'name': menuName,
-            'qty': order_count,
-            'price': price,
-            'total': (price * order_count)
-          }
-          break menuLoop
-        } else {
-          continue
-        }
+      order_list[menuName] = {
+        'name': menuName,
+        'qty': order_count,
+        'price': price,
+        'total': (price * order_count)
       }
     }
   }
@@ -87,8 +93,79 @@ async function handleEvent(event) {
     line_messages.push(` - ${order.name}[${order.qty}]: ${order.total}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
-  return reply(event.replyToken, line_messages.join('\n'))
+  // console.log(line_messages.join('\n'))
+  // return reply(event.replyToken, line_messages.join('\n'))
 }
+
+function normalizeThai(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFC')
+    .replace(/[่้๊๋์]/g, '')
+    .replace(/([ก-ฮ])์/g, '$1')
+    .replace(/[-–—]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/(.)\1{2,}/g, '$1$1');
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+function extractCandidates(input, minLen = 3) {
+  const text = normalizeThai(input);
+  const tokens = [];
+
+  for (let i = 0; i < text.length; i++) {
+    for (let j = i + minLen; j <= text.length; j++) {
+      tokens.push(text.slice(i, j));
+    }
+  }
+  return tokens;
+}
+function findMenuSafe(input, menus) {
+  const tokens = extractCandidates(input);
+
+  let best = null;
+
+  for (const menu of menus) {
+    for (const kw of menu.keywords) {
+      const k = normalizeThai(kw);
+
+      for (const t of tokens) {
+        if (Math.abs(t.length - k.length) > 1) continue;
+
+        const dist = levenshtein(t, k);
+        const ratio = dist / k.length;
+
+        // 🔒 threshold สำคัญ
+        if (ratio <= 0.25) {
+          if (!best || ratio < best.ratio) {
+            best = { menu, ratio };
+          }
+        }
+      }
+    }
+  }
+
+  return best ? best.menu : null;
+}
+
 
 /* ===== REPLY ===== */
 function reply(token, text) {
