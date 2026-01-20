@@ -54,6 +54,22 @@ app.post('/test-webhook', async (req, res) => {
 
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
+  const url = process.env.WEB_HOOK_URL;
+  const forward = await fetch(url, {
+    method: req.method,
+    headers: {
+      'content-type': 'application/json',
+      // forward header สำคัญ
+      'x-forwarded-from': 'vercel',
+    },
+    body: JSON.stringify(req.body),
+  });
+
+  res.status(200).json({
+    ok: true,
+    forwarded: forward.status
+  });
+
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const lines = event.message.text.split('\n')
   var order_list = {}
