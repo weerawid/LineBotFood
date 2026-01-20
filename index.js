@@ -108,7 +108,7 @@ async function handleEvent(event) {
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
   // console.log(line_messages.join('\n'))
-  // return reply(event.replyToken, line_messages.join('\n'))
+  return reply(event.replyToken, line_messages.join('\n'))
 }
 
 function normalizeThai(text) {
