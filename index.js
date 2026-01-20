@@ -87,7 +87,7 @@ async function handleEvent(event) {
     line_messages.push(` - ${order.name}[${order.qty}]: ${order.total}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
-  reply(event.replyToken, line_messages.join('\n'))
+  return reply(event.replyToken, line_messages.join('\n'))
 }
 
 /* ===== REPLY ===== */
