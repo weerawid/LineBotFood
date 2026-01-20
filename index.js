@@ -6,7 +6,7 @@ const app = express();
 
 /* ===== LINE CONFIG ===== */
 const config = {
-  channelAccessToken: 'Np7VCSpBvkoVV7aN93KLt3bX1d2ZjHSVwXw9kxLAxYs/s0pA3foo9FZw1rC/Kk4xqvns7xXua2B+trdcqchW+vnM8dVKrGoaMIjjTB59wutMI8XzxSolncOTZbVGrQbbvEvqkrhBRxeO91TiGjzlGQdB04t89/1O/w1cDnyilFU=',
+  channelAccessToken: '/tHXRfAWnQfPjIesfdStK7LkJIlKonXzW7l3n9cA+vpyGtSD185by64L+BmnjE3Zqvns7xXua2B+trdcqchW+vnM8dVKrGoaMIjjTB59wuu5ddNLhtTbKBsILRSKG38/ErqWroYaNVwAcCV6vJQTNQdB04t89/1O/w1cDnyilFU=',
   channelSecret: '331e81c30fc0127ab0298be36d5fae4e',
 };
 
