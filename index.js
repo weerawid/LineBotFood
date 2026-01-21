@@ -14,6 +14,9 @@ const config = {
 /* ===== LINE CLIENT ===== */
 const client = new line.Client(config);
 
+
+const receiveMessageStore = new Map();
+
 /* ===== WEBHOOK ===== */
 app.use('/webhook', line.middleware(config));
 
@@ -50,6 +53,13 @@ async function forwardWebHook(body) {
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
+  const command = event.message.text
+  
+  receiveMessageStore.set()
+
+}
+
+async function summaryOrder(event) {
   const menuList = await sheet.getMenuList()
   const menuFilter = menuList.map((item, idx)=>{
     return {
