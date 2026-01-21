@@ -55,16 +55,15 @@ async function handleEvent(event) {
     return {
       name: item.order_list,
       price: item.price,
-      keywords: (item.key_words ?? '').split(',').filter(Boolean)
+      keywords: (item.key_words ?? '').split(',').filter(Boolean).sort((a, b) => b.length - a.length)
     }
-  })
+  }).sort((a, b) => b.name.length - a.name.length)
   // console.log(menuList)
   const lines = event.message.text.split('\n')
   var order_list = {}
   
   lineLoop:
   for (let i = 0; i < lines.length; i++) {
-    const list = menuList.sort((a, b) => b.key_words.length - a.key_words.length)
     const text = lines[i]
     
     const find_menu = findMenuSafe(text, menuFilter)
