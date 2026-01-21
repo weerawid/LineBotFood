@@ -55,14 +55,12 @@ async function handleEvent(event) {
   if (command === "//summary") {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
-    console.log(quotedMessage)
     if (quotedMessage) {
-      console.log('reply')
-      reply(event.replyToken, quotedMessage.message.text)
       receiveMessageStore.delete(quitedId)
+      return summaryOrder(quotedMessage)
     }
   } else {
-    receiveMessageStore.set(event.message.id, event)
+    receiveMessageStore.set(event.message.id, quotedMessage.message.text)
   }
   
   return;
@@ -80,7 +78,7 @@ function getValidMessage(messageId) {
   return data;
 }
 
-async function summaryOrder(event) {
+async function summaryOrder(message) {
   const menuList = await sheet.getMenuList()
   const menuFilter = menuList.map((item, idx)=>{
     return {
@@ -91,7 +89,7 @@ async function summaryOrder(event) {
   }).sort((a, b) => b.name.length - a.name.length)
 
 
-  const lines = event.message.text.split('\n')
+  const lines = message.split('\n')
   var order_list = {}
   
   lineLoop:
