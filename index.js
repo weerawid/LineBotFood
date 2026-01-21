@@ -51,6 +51,7 @@ async function forwardWebHook(body) {
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const menuList = await sheet.getMenuList()
+  console.log(menuList)
   const lines = event.message.text.split('\n')
   var order_list = {}
   
