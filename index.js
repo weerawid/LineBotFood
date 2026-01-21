@@ -51,7 +51,14 @@ async function forwardWebHook(body) {
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const menuList = await sheet.getMenuList()
-  console.log(menuList)
+  const menuFilter = menuList.map((item, idx)=>{
+    return {
+      name: item.order_list,
+      price: item.price,
+      keywords: (item.key_words ?? '').split(',').filter(Boolean)
+    }
+  })
+  // console.log(menuList)
   const lines = event.message.text.split('\n')
   var order_list = {}
   
