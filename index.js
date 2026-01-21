@@ -22,7 +22,7 @@ const menuFilter = menuList.map((item, idx)=>{
   return {
     name: item.order_list,
     price: item.price,
-    keywords: item.key_words.split(',')
+    keywords: (item.key_words ?? '').split(',').filter(Boolean)
   }
 })
 const menuFuse = new Fuse(menuFilter, {
