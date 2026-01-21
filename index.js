@@ -55,8 +55,7 @@ async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const command = event.message.text
   
-  receiveMessageStore.set()
-
+  return reply(event.replyToken, 'SUCCESS')
 }
 
 async function summaryOrder(event) {
