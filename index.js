@@ -57,7 +57,7 @@ async function handleEvent(event) {
     var quotedMessage = getValidMessage(quitedId)
     if (quotedMessage) {
       receiveMessageStore.delete(quitedId)
-      return summaryOrder(quotedMessage)
+      return summaryOrder(event, quotedMessage)
     }
   } else {
     receiveMessageStore.set(event.message.id, quotedMessage.message.text)
@@ -78,7 +78,7 @@ function getValidMessage(messageId) {
   return data;
 }
 
-async function summaryOrder(message) {
+async function summaryOrder(event, message) {
   const menuList = await sheet.getMenuList()
   const menuFilter = menuList.map((item, idx)=>{
     return {
