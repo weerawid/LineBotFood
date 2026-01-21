@@ -14,23 +14,6 @@ const config = {
 /* ===== LINE CLIENT ===== */
 const client = new line.Client(config);
 
-/* ===== MEMORY STORE (DEMO) ===== */
-const sessions = {}; 
-
-const menuList = await sheet.getMenuList()
-const menuFilter = menuList.map((item, idx)=>{
-  return {
-    name: item.order_list,
-    price: item.price,
-    keywords: (item.key_words ?? '').split(',').filter(Boolean)
-  }
-})
-const menuFuse = new Fuse(menuFilter, {
-  keys: ['keywords'],
-  threshold: 0.1,
-  ignoreLocation: true
-})
-
 /* ===== WEBHOOK ===== */
 app.use('/webhook', line.middleware(config));
 
@@ -67,6 +50,7 @@ async function forwardWebHook(body) {
 /* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
+  const menuList = await sheet.getMenuList()
   const lines = event.message.text.split('\n')
   var order_list = {}
   
@@ -177,7 +161,6 @@ function findMenuSafe(input, menus) {
 
   return best ? best.menu : null;
 }
-
 
 /* ===== REPLY ===== */
 function reply(token, text) {
