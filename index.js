@@ -5,16 +5,14 @@ import * as sheet from './google/google_sheet.js';
 
 const app = express();
 
-/* ===== LINE CONFIG ===== */
 const config = {
   channelAccessToken: '/tHXRfAWnQfPjIesfdStK7LkJIlKonXzW7l3n9cA+vpyGtSD185by64L+BmnjE3Zqvns7xXua2B+trdcqchW+vnM8dVKrGoaMIjjTB59wuu5ddNLhtTbKBsILRSKG38/ErqWroYaNVwAcCV6vJQTNQdB04t89/1O/w1cDnyilFU=',
   channelSecret: '331e81c30fc0127ab0298be36d5fae4e',
 };
 
-/* ===== LINE CLIENT ===== */
 const client = new line.Client(config);
 
-
+const TTL = 60 * 60 * 1000; 
 const receiveMessageStore = new Map();
 
 /* ===== WEBHOOK ===== */
@@ -50,12 +48,34 @@ async function forwardWebHook(body) {
   });
 }
 
-/* ===== MAIN LOGIC ===== */
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const command = event.message.text
+
+  if (command === "//summary") {
+    const quitedId = event.message.quotedMessageId
+    var quotedMessage = getValidMessage(quitedId)
+    if (quotedMessage) {
+      reply(event.replyToken, quotedMessage.message.text)
+      receiveMessageStore.delete(quitedId)
+    }
+  } else {
+    receiveMessageStore.set(event.message.id, event)
+  }
   
-  return reply(event.replyToken, 'SUCCESS')
+  return;
+}
+
+function getValidMessage(messageId) {
+  const data = receiveMessageStore.get(messageId);
+  if (!data) return null;
+
+  if (Date.now() - data.createdAt > TTL) {
+    receiveMessageStore.delete(messageId);
+    return null;
+  }
+
+  return data;
 }
 
 async function summaryOrder(event) {
@@ -176,7 +196,6 @@ function findMenuSafe(input, menus) {
   return best ? best.menu : null;
 }
 
-/* ===== REPLY ===== */
 function reply(token, text) {
   return client.replyMessage(token, {
     type: 'text',
@@ -184,7 +203,6 @@ function reply(token, text) {
   });
 }
 
-/* ===== START SERVER ===== */
 app.listen(3000, () => {
   console.log('LINE Bot running on port 3000');
 });
