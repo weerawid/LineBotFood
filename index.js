@@ -58,7 +58,13 @@ async function handleEvent(event) {
       keywords: (item.key_words ?? '').split(',').filter(Boolean).sort((a, b) => b.length - a.length)
     }
   }).sort((a, b) => b.name.length - a.name.length)
-  // console.log(menuList)
+
+  // const menuLog = menuFilter.map((item, idx)=>{
+  //   return item.name
+  // })
+
+
+  // console.log(menuLog)
   const lines = event.message.text.split('\n')
   var order_list = {}
   
