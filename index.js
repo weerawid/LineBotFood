@@ -55,7 +55,9 @@ async function handleEvent(event) {
   if (command === "//summary") {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
+    console.log(quotedMessage)
     if (quotedMessage) {
+      console.log('reply')
       reply(event.replyToken, quotedMessage.message.text)
       receiveMessageStore.delete(quitedId)
     }
