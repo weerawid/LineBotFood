@@ -59,12 +59,7 @@ async function handleEvent(event) {
     }
   }).sort((a, b) => b.name.length - a.name.length)
 
-  // const menuLog = menuFilter.map((item, idx)=>{
-  //   return item.name
-  // })
 
-
-  // console.log(menuLog)
   const lines = event.message.text.split('\n')
   var order_list = {}
   
@@ -73,9 +68,6 @@ async function handleEvent(event) {
     const text = lines[i]
     
     const find_menu = findMenuSafe(text, menuFilter)
-    console.log(text)
-    console.log(find_menu)
-    // console.log(menuFilter)
     if (find_menu != null) {
       const menuName = find_menu.name
       const price = find_menu.price
@@ -99,10 +91,9 @@ async function handleEvent(event) {
   for(let i=0; i < order_list_key.length; i++) {
     const order = order_list[order_list_key[i]]
     order_total = order_total + order.total
-    line_messages.push(` - ${order.name}[${order.qty}]: ${order.total}`)
+    line_messages.push(` ${i+1}. ${order.name}[${order.qty}]: ${order.total}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
-  // console.log(line_messages.join('\n'))
   return reply(event.replyToken, line_messages.join('\n'))
 }
 
@@ -147,6 +138,7 @@ function extractCandidates(input, minLen = 3) {
   }
   return tokens;
 }
+
 function findMenuSafe(input, menus) {
   const tokens = extractCandidates(input);
 
