@@ -35,9 +35,12 @@ const menuFuse = new Fuse(menuFilter, {
 app.use('/webhook', line.middleware(config));
 
 app.post('/webhook', (req, res) => {
-  res.sendStatus(200);
   Promise.all(req.body.events.map(handleEvent))
-    .catch(console.error);
+    .then(() => res.end())
+    .catch(err => {
+      console.error(err);
+      res.status(500).end();
+    });
   forwardWebHook(req.body);
 });
 
