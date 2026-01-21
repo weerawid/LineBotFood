@@ -60,7 +60,7 @@ async function handleEvent(event) {
       return summaryOrder(event, quotedMessage)
     }
   } else {
-    receiveMessageStore.set(event.message.id, quotedMessage.message.text)
+    receiveMessageStore.set(event.message.id, event.message.text)
   }
   
   return;
