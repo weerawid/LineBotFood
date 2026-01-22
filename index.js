@@ -2,6 +2,7 @@ import express from 'express';
 import Fuse from 'fuse.js';
 import * as line from '@line/bot-sdk';
 import * as sheet from './google/google_sheet.js';
+import { google } from 'googleapis';
 
 const app = express();
 
@@ -52,7 +53,7 @@ async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const command = event.message.text
 
-  if (command === "//summary") {
+  if (command.includes('//cf') ) {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
     if (quotedMessage) {
@@ -123,6 +124,18 @@ async function summaryOrder(event, message) {
     line_messages.push(` ${i+1}. ${order.name}[${order.qty}]: ${order.total}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
+
+  for(let i=0; i < order_list_key.length; i++) {
+    const order = order_list[order_list_key[i]]
+    order_total = order_total + order.total
+    if (i == (order_list_key.length-1)) {
+      sheet.appendData('testยอดขาย','A:G',[formatDateString(), order.name, order_total, order.price, order.total, ''])
+    } else {
+      sheet.appendData('testยอดขาย','A:G',[formatDateString(), order.name, order_total, order.price, order.total, order_total])
+    }
+  }
+  
+
   return reply(event.replyToken, line_messages.join('\n'))
 }
 
@@ -201,6 +214,13 @@ function reply(token, text) {
     type: 'text',
     text,
   });
+}
+
+function formatDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); 
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${day}/${month}/${year}`;
 }
 
 app.listen(3000, () => {
