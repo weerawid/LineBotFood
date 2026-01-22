@@ -129,9 +129,9 @@ async function summaryOrder(event, message) {
 
   const insert_sheet_data = sheet_order.map((item, idx) => {
     if (idx == sheet_order.length - 1) {
-      return [formatDateString(), item.name, item.qty, item.price, item.total, '', order_total]
+      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', order_total]
     } else {
-      return [formatDateString(), item.name, item.qty, item.price, item.total, '', '']
+      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', '']
     }
   })
   sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
