@@ -23,7 +23,7 @@ async function getSheet() {
 }
 
 async function getSheetData(range) {
-  const sheets = getSheet()
+  const sheets = await getSheet()
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range,
@@ -44,10 +44,11 @@ function rowsToObjects(rows) {
 
 export async function getMenuList() {
   const sheetRange = 'รายการสินค้า!A1:C'
-  return getSheetData(sheetRange)
+  return await getSheetData(sheetRange)
 }
 
 export async function appendData(table, range, data) {
+  const sheets = await getSheet()
   await sheets.spreadsheets.values.append({
     spreadsheetId: spreadsheetId,
     range: `${table}!${range}`,
