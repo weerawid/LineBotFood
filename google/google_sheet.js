@@ -55,7 +55,7 @@ export async function appendData(table, range, data) {
     range: `${table}!${range}`,
     valueInputOption: 'USER_ENTERED',
     requestBody: {
-      values: [data]
+      values: data
     }
   });
 }

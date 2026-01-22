@@ -115,12 +115,14 @@ async function summaryOrder(event, message) {
   }
 
   var line_messages = []
+  var sheet_order = []
   var order_total = 0
   const order_list_key = Object.keys(order_list)
   line_messages.push('สรุปรายการขนมและเครื่องดื่ม')
   for(let i=0; i < order_list_key.length; i++) {
     const order = order_list[order_list_key[i]]
     order_total = order_total + order.total
+    sheet_order.push(order)
     line_messages.push(` ${i+1}. ${order.name}[${order.qty}]: ${order.total}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
@@ -131,9 +133,18 @@ async function summaryOrder(event, message) {
     if (i == (order_list_key.length-1)) {
       sheet.appendData('testยอดขาย','A:G',[formatDateString(), order.name, order.qty, order.price, order.total, '', ''])
     } else {
-      sheet.appendData('testยอดขาย','A:G',[formatDateString(), order.name, order.qty, order.price, order.total, '', order_total])
+      
     }
   }
+
+  const insert_sheet_data = sheet_order.map((item, idx) => {
+    if (idx == sheet_order.length - 1) {
+      return [formatDateString(), order.name, order.qty, order.price, order.total, '', order_total]
+    } else {
+      return [formatDateString(), order.name, order.qty, order.price, order.total, '', '']
+    }
+  })
+  sheet.appendData('testยอดขาย','A:G', insert_sheet_data)
   
 
   return reply(event.replyToken, line_messages.join('\n'))
