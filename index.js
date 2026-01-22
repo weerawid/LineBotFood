@@ -144,8 +144,7 @@ async function summaryOrder(event, message) {
       return [formatDateString(), item.name, item.qty, item.price, item.total, '', '']
     }
   })
-  sheet.appendData('testยอดขาย','A:G', insert_sheet_data)
-  
+  sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
 
   return reply(event.replyToken, line_messages.join('\n'))
 }
