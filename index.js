@@ -127,16 +127,6 @@ async function summaryOrder(event, message) {
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
 
-  for(let i=0; i < order_list_key.length; i++) {
-    const order = order_list[order_list_key[i]]
-    order_total = order_total + order.total
-    if (i == (order_list_key.length-1)) {
-      sheet.appendData('testยอดขาย','A:G',[formatDateString(), order.name, order.qty, order.price, order.total, '', ''])
-    } else {
-      
-    }
-  }
-
   const insert_sheet_data = sheet_order.map((item, idx) => {
     if (idx == sheet_order.length - 1) {
       return [formatDateString(), item.name, item.qty, item.price, item.total, '', order_total]
