@@ -92,9 +92,9 @@ async function handleEvent(event) {
 async function replyImageWithKey(roken, key) {
   const config = await sheet.getConfig()
   const qrLink = config.find(item => {
-    return item.key == "QR_PAY"
+    return item.key == key
   }).value
-  return await replyImage(event.replyToken, qrLink)
+  return await replyImage(roken, qrLink)
 }
 
 function getValidMessage(messageId) {
