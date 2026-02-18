@@ -10,6 +10,8 @@ import { google } from 'googleapis';
 
 const app = express();
 
+
+
 const config = {
   channelAccessToken: '/tHXRfAWnQfPjIesfdStK7LkJIlKonXzW7l3n9cA+vpyGtSD185by64L+BmnjE3Zqvns7xXua2B+trdcqchW+vnM8dVKrGoaMIjjTB59wuu5ddNLhtTbKBsILRSKG38/ErqWroYaNVwAcCV6vJQTNQdB04t89/1O/w1cDnyilFU=',
   channelSecret: '331e81c30fc0127ab0298be36d5fae4e',
@@ -17,9 +19,11 @@ const config = {
 
 const client = new line.Client(config);
 
-
+const openApiKey = Buffer
+  .from(process.env.OPEN_AI_BASE64, 'base64')
+  .toString('utf8');
 const openai = new OpenAI({
-  apiKey: process.env.OPEN_AI_KEY,
+  apiKey: openApiKey,
 });
 const openaiConfig = {
   model: "gpt-4.1-mini",
