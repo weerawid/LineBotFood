@@ -19,11 +19,8 @@ const config = {
 
 const client = new line.Client(config);
 
-const openApiKey = Buffer
-  .from(process.env.OPEN_AI_BASE64, 'base64')
-  .toString('utf8');
 const openai = new OpenAI({
-  apiKey: openApiKey,
+  apiKey: process.env.OPEN_AI_KEY,
 });
 const openaiConfig = {
   model: "gpt-4.1-mini",
