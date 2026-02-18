@@ -247,6 +247,7 @@ function reply(token, text) {
 }
 
 function replyImage(token, image_link) {
+  console.log(image_link)
   return client.replyMessage(token, {
     type: "image",
     originalContentUrl: image_link,
