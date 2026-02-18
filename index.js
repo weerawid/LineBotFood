@@ -1,4 +1,8 @@
 import express from 'express';
+import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
+
 import Fuse from 'fuse.js';
 import * as line from '@line/bot-sdk';
 import * as sheet from './google/google_sheet.js';
@@ -12,6 +16,16 @@ const config = {
 };
 
 const client = new line.Client(config);
+
+
+const openai = new OpenAI({
+  apiKey: process.env.OPEN_AI_KEY,
+});
+const openaiConfig = {
+  model: "gpt-4.1-mini",
+  reasoning: { effort: "low" },
+  instructions: "Are semicolons optional in JavaScript?"
+}
 
 const TTL = 60 * 60 * 1000; 
 const receiveMessageStore = new Map();
@@ -53,7 +67,13 @@ async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
   const command = event.message.text
 
-  if (command.includes('//cf') ) {
+  if (command.toLowerCase() == '@qr') {
+    const config = await sheet.getConfig()
+    const qrLink = config.find(item => {
+      return item.key == "QR_PAY"
+    }).value
+    return replyImage(event.replyToken, qrLink)
+  } else if (command.includes('//cf')) {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
     if (quotedMessage) {
@@ -81,63 +101,69 @@ function getValidMessage(messageId) {
 
 async function summaryOrder(event, message) {
   const menuList = await sheet.getMenuList()
-  const menuFilter = menuList.sort((a, b) => b.length - a.length).map((item, idx)=>{
-    return {
-      name: item.order_list,
-      price: item.price,
-      keywords: (item.key_words ?? '').split(',').filter(Boolean).sort((a, b) => b.length - a.length)
-    }
-  }).sort((a, b) => b.name.length - a.name.length)
-
-
-  const lines = message.split('\n')
-  var order_list = {}
-  
-  lineLoop:
-  for (let i = 0; i < lines.length; i++) {
-    const text = lines[i]
-    
-    const find_menu = findMenuSafe(text, menuFilter)
-    if (find_menu != null) {
-      const menuName = find_menu.name
-      const price = find_menu.price
-      const match = text.match(/(\d+)(?!\s*[%.\d])/);
-      const qty = match ? parseInt(match[1], 10) : 1;
-      const order_count = (order_list[menuName]?.qty ?? 0) + qty
-
-      order_list[menuName] = {
-        'name': menuName,
-        'qty': order_count,
-        'price': price,
-        'total': (price * order_count)
-      }
-    }
-  }
+  const aiResponse = await summarizeOrder(message)
 
   var line_messages = []
   var sheet_order = []
   var order_total = 0
-  const order_list_key = Object.keys(order_list)
+  var menuItem = aiResponse.items
+  var address = aiResponse.address
+  var addressText = [
+    address?.home?.trim() ? `บ้านเลขที่: ${address.home}` : null,
+    address?.soi?.trim() ? `ซอย: ${address.soi}` : null
+  ].filter(Boolean)
+
+  line_messages.push(addressText.join(', '))
   line_messages.push('สรุปรายการขนมและเครื่องดื่ม')
-  for(let i=0; i < order_list_key.length; i++) {
-    const order = order_list[order_list_key[i]]
-    order_total = order_total + order.total
+  for(let i=0; i < menuItem.length; i++) {
+    const order = menuItem[i]
+    order_total = order_total + order.total_price
     sheet_order.push(order)
-    line_messages.push(` ${i+1}. ${order.name}[${order.qty}]: ${order.total}`)
+    const modifiers = order?.modifiers?.length > 0 ? `[${order?.modifiers.join(',')}]` : "";
+    line_messages.push(` ${i+1}. ${order.menu_name}[${order.quantity}]${modifiers}: ${order.total_price}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
 
   const insert_sheet_data = sheet_order.map((item, idx) => {
     if (idx == sheet_order.length - 1) {
-      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', order_total]
+      return [formatDateString(), item.menu_name, item.quantity, item.price, item.total_price, 'Auto', order_total]
     } else {
-      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', '']
+      return [formatDateString(), item.menu_name, item.quantity, item.price, item.total_price, 'Auto', '']
     }
   })
   sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
 
   return reply(event.replyToken, line_messages.join('\n'))
 }
+
+function createOrderSystemPrompt(menuList) {
+  const filePath = path.resolve("./asset/text/openAIPrompt.txt");
+  const template = fs.readFileSync(filePath, "utf-8");
+  const menuJson = JSON.stringify(menuList, null, 2);
+  return template.replace("__menuList__", menuJson);
+}
+
+async function summarizeOrder(customerText) {
+  const menuList = await sheet.getMenuList()
+  const response = await openai.chat.completions.create({
+    model: openaiConfig.model,
+    temperature: 0,
+    messages: [
+      {
+        role: "system",
+        content: createOrderSystemPrompt(menuList)
+      },
+      {
+        role: "user",
+        content: customerText
+      }
+    ],
+    response_format: { type: "json_object" } 
+  });
+
+  return JSON.parse(response.choices[0].message.content);
+}
+
 
 function normalizeThai(text) {
   return text
@@ -215,6 +241,10 @@ function reply(token, text) {
     text,
   });
 }
+
+function replyImage(token, image_link) {
+  return client.replyImage(  token, image_link)
+} 
 
 function formatDateString(date = new Date()) {
   const year = date.getFullYear();

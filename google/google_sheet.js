@@ -19,7 +19,6 @@ async function getSheet() {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
-  console.log(sheets)
   return sheets
 }
 
@@ -45,6 +44,11 @@ function rowsToObjects(rows) {
 
 export async function getMenuList() {
   const sheetRange = 'รายการสินค้า!A1:C'
+  return await getSheetData(sheetRange)
+}
+
+export async function getConfig() {
+  const sheetRange = 'config!A1:B'
   return await getSheetData(sheetRange)
 }
 
