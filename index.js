@@ -72,11 +72,9 @@ async function handleEvent(event) {
   const command = event.message.text
 
   if (command.toLowerCase() == '@qr') {
-    const config = await sheet.getConfig()
-    const qrLink = config.find(item => {
-      return item.key == "QR_PAY"
-    }).value
-    return await replyImage(event.replyToken, qrLink)
+    return await replyImageWithKey(event.replyToken, "QR_PAY")
+  } else if (command.toLowerCase() == '@menu') {
+    return await replyImageWithKey(event.replyToken, "MENU_LIST")
   } else if (command.includes('//cf')) {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
@@ -89,6 +87,14 @@ async function handleEvent(event) {
   }
   
   return;
+}
+
+async function replyImageWithKey(roken, key) {
+  const config = await sheet.getConfig()
+  const qrLink = config.find(item => {
+    return item.key == "QR_PAY"
+  }).value
+  return await replyImage(event.replyToken, qrLink)
 }
 
 function getValidMessage(messageId) {
