@@ -76,7 +76,7 @@ async function handleEvent(event) {
     const qrLink = config.find(item => {
       return item.key == "QR_PAY"
     }).value
-    return replyImage(event.replyToken, qrLink)
+    return await replyImage(event.replyToken, qrLink)
   } else if (command.includes('//cf')) {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
@@ -247,7 +247,11 @@ function reply(token, text) {
 }
 
 function replyImage(token, image_link) {
-  return client.replyImage(  token, image_link)
+  return client.replyMessage(token, {
+    type: "image",
+    originalContentUrl: image_link,
+    previewImageUrl: image_link
+  });
 } 
 
 function formatDateString(date = new Date()) {
