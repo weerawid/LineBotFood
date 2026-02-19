@@ -10,8 +10,6 @@ import { google } from 'googleapis';
 
 const app = express();
 
-
-
 const config = {
   channelAccessToken: '/tHXRfAWnQfPjIesfdStK7LkJIlKonXzW7l3n9cA+vpyGtSD185by64L+BmnjE3Zqvns7xXua2B+trdcqchW+vnM8dVKrGoaMIjjTB59wuu5ddNLhtTbKBsILRSKG38/ErqWroYaNVwAcCV6vJQTNQdB04t89/1O/w1cDnyilFU=',
   channelSecret: '331e81c30fc0127ab0298be36d5fae4e',
@@ -19,9 +17,11 @@ const config = {
 
 const client = new line.Client(config);
 
+var openAIKey = await getConfig("OPENAI_API_KEY")
 const openai = new OpenAI({
-  apiKey: process.env.OPEN_AI_KEY,
+  apiKey: openAIKey,
 });
+
 const openaiConfig = {
   model: "gpt-4.1-mini",
   reasoning: { effort: "low" },
@@ -52,9 +52,23 @@ app.post('/test-webhook', async (req, res) => {
   const events = req.body?.events || [];
   Promise.all(events.map(handleEvent))
     .catch(console.error);
-
-  forwardWebHook(req.body);
 });
+
+app.post('/test-message', async (req, res) => {
+  res.sendStatus(200);
+
+  const events = req.body?.events || [];
+  Promise.all(events.map(testMessage))
+    .catch(console.error);
+});
+
+
+async function testMessage(event) {
+  if (event.type !== 'message' || event.message.type !== 'text') return;
+  const text = event.message.text
+  var message = await summaryOrder(text) 
+  console.log(message.join('\n'))
+}
 
 async function forwardWebHook(body) {
   await fetch(process.env.WEB_HOOK_URL, {
@@ -77,13 +91,21 @@ async function handleEvent(event) {
     var quotedMessage = getValidMessage(quitedId)
     if (quotedMessage) {
       receiveMessageStore.delete(quitedId)
-      return summaryOrder(event, quotedMessage)
+      var message = await summaryOrder(quotedMessage) 
+      return reply(event.replyToken, message.join('\n'))
     }
   } else {
     receiveMessageStore.set(event.message.id, event.message.text)
   }
   
   return;
+}
+
+async function getConfig(key) {
+  const config = await sheet.getConfig()
+  return config.find(item => {
+    return item.key == key
+  }).value
 }
 
 async function replyImageWithKey(roken, key) {
@@ -106,21 +128,21 @@ function getValidMessage(messageId) {
   return data;
 }
 
-async function summaryOrder(event, message) {
-  const menuList = await sheet.getMenuList()
+async function summaryOrder(message) {
   const aiResponse = await summarizeOrder(message)
 
   var line_messages = []
   var sheet_order = []
   var order_total = 0
   var menuItem = aiResponse.items
+  var unknwonItem = aiResponse.unknown_items
   var address = aiResponse.address
   var addressText = [
     address?.home?.trim() ? `บ้านเลขที่: ${address.home}` : null,
     address?.soi?.trim() ? `ซอย: ${address.soi}` : null
   ].filter(Boolean)
 
-  line_messages.push(addressText.join(', '))
+  if (addressText.length > 0) line_messages.push(addressText.join(', '))
   line_messages.push('สรุปรายการขนมและเครื่องดื่ม')
   for(let i=0; i < menuItem.length; i++) {
     const order = menuItem[i]
@@ -128,6 +150,9 @@ async function summaryOrder(event, message) {
     sheet_order.push(order)
     const modifiers = order?.modifiers?.length > 0 ? `[${order?.modifiers.join(',')}]` : "";
     line_messages.push(` ${i+1}. ${order.menu_name}[${order.quantity}]${modifiers}: ${order.total_price}`)
+  }
+  if (unknwonItem.length > 0) {
+    line_messages.push(`ไม่พบรายการ: ${unknwonItem.join(',')}`)
   }
   line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
 
@@ -140,7 +165,7 @@ async function summaryOrder(event, message) {
   })
   sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
 
-  return reply(event.replyToken, line_messages.join('\n'))
+  return line_messages 
 }
 
 function createOrderSystemPrompt(menuList) {
@@ -169,77 +194,6 @@ async function summarizeOrder(customerText) {
   });
 
   return JSON.parse(response.choices[0].message.content);
-}
-
-
-function normalizeThai(text) {
-  return text
-    .toLowerCase()
-    .normalize('NFC')
-    .replace(/[่้๊๋์]/g, '')
-    .replace(/([ก-ฮ])์/g, '$1')
-    .replace(/[-–—]/g, '')
-    .replace(/\s+/g, '')
-    .replace(/(.)\1{2,}/g, '$1$1');
-}
-
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
-      );
-    }
-  }
-  return dp[m][n];
-}
-
-function extractCandidates(input, minLen = 3) {
-  const text = normalizeThai(input);
-  const tokens = [];
-
-  for (let i = 0; i < text.length; i++) {
-    for (let j = i + minLen; j <= text.length; j++) {
-      tokens.push(text.slice(i, j));
-    }
-  }
-  return tokens;
-}
-
-function findMenuSafe(input, menus) {
-  const tokens = extractCandidates(input);
-
-  let best = null;
-
-  for (const menu of menus) {
-    for (const kw of menu.keywords) {
-      const k = normalizeThai(kw);
-
-      for (const t of tokens) {
-        if (Math.abs(t.length - k.length) > 1) continue;
-
-        const dist = levenshtein(t, k);
-        const ratio = dist / k.length;
-
-        // 🔒 threshold สำคัญ
-        if (ratio <= 0.25) {
-          if (!best || ratio < best.ratio) {
-            best = { menu, ratio };
-          }
-        }
-      }
-    }
-  }
-
-  return best ? best.menu : null;
 }
 
 function reply(token, text) {
