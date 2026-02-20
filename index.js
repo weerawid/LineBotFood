@@ -91,7 +91,7 @@ async function handleEvent(event) {
     var quotedMessage = getValidMessage(quitedId)
     if (quotedMessage) {
       receiveMessageStore.delete(quitedId)
-      var message = await summaryOrder(quotedMessage) 
+      var message = await summaryOrder(quotedMessage, true) 
       return reply(event.replyToken, message.join('\n'))
     }
   } else {
@@ -128,7 +128,7 @@ function getValidMessage(messageId) {
   return data;
 }
 
-async function summaryOrder(message) {
+async function summaryOrder(message, isInsert = false) {
   const aiResponse = await summarizeOrder(message)
 
   var line_messages = []
@@ -163,8 +163,10 @@ async function summaryOrder(message) {
       return [formatDateString(), item.menu_name, item.quantity, item.price, item.total_price, 'Auto', '']
     }
   })
-  sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
-
+  if (isInsert) {
+    sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
+  }
+  
   return line_messages 
 }
 
