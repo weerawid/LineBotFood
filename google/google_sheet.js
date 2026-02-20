@@ -43,7 +43,7 @@ function rowsToObjects(rows) {
 }
 
 export async function getMenuList() {
-  const sheetRange = 'รายการสินค้า!A1:C'
+  const sheetRange = 'รายการสินค้า!A1:D'
   return await getSheetData(sheetRange)
 }
 

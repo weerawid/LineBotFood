@@ -177,13 +177,14 @@ function createOrderSystemPrompt(menuList) {
 
 async function summarizeOrder(customerText) {
   const menuList = await sheet.getMenuList()
+  const prompt = createOrderSystemPrompt(menuList)
   const response = await openai.chat.completions.create({
     model: openaiConfig.model,
     temperature: 0,
     messages: [
       {
         role: "system",
-        content: createOrderSystemPrompt(menuList)
+        content: prompt
       },
       {
         role: "user",
