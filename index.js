@@ -161,7 +161,7 @@ async function summaryOrder(message, isInsert = false) {
 
   const insert_sheet_data = sheet_order.map((item, idx) => {
     if (idx == sheet_order.length - 1) {
-      return [formatDateString(), item.menu_name, item.quantity, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', `=SUM(INDEX(D:D,ROW()-${sheet_order.length - 1}):INDEX(D:D,ROW()))`]
+      return [formatDateString(), item.menu_name, item.quantity, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', `=SUM(INDEX(E:E,ROW()-${sheet_order.length - 1}):INDEX(E:E,ROW()))`]
     } else {
       return [formatDateString(), item.menu_name, item.quantity, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', '']
     }
@@ -252,7 +252,7 @@ async function summaryOrderForInsert(event, message) {
 
   const insert_sheet_data = sheet_order.map((item, idx) => {
     if (idx == sheet_order.length - 1) {
-      return [formatDateString(), item.name, item.qty, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', `=SUM(INDEX(D:D,ROW()-${sheet_order.length - 1}):INDEX(D:D,ROW()))`]
+      return [formatDateString(), item.name, item.qty, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', `=SUM(INDEX(E:E,ROW()-${sheet_order.length - 1}):INDEX(E:E,ROW()))`]
     } else {
       return [formatDateString(), item.name, item.qty, item.price, '=INDEX(C:C,ROW()) * INDEX(D:D,ROW())', 'Auto', '']
     }
