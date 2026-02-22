@@ -86,6 +86,9 @@ async function handleEvent(event) {
     return await replyImageWithKey(event.replyToken, "QR_PAY")
   } else if (command.toLowerCase() == '@menu') {
     return await replyImageWithKey(event.replyToken, "MENU_LIST")
+  } else if (command.includes('//ins')) {
+    var message = await summaryOrder(command) 
+    return reply(event.replyToken, message.join('\n'))
   } else if (command.includes('//cf')) {
     const quitedId = event.message.quotedMessageId
     var quotedMessage = getValidMessage(quitedId)
