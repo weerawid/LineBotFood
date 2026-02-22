@@ -202,7 +202,7 @@ async function summarizeOrder(customerText) {
   return JSON.parse(response.choices[0].message.content);
 }
 
-async function summaryOrderForInsert(message) {
+async function summaryOrderForInsert(event, message) {
   const menuList = await sheet.getMenuList()
   const menuFilter = menuList.sort((a, b) => b.length - a.length).map((item, idx)=>{
     return {
