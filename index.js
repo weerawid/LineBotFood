@@ -87,7 +87,7 @@ async function handleEvent(event) {
   } else if (command.toLowerCase() == '@menu') {
     return await replyImageWithKey(event.replyToken, "MENU_LIST")
   } else if (command.includes('//ins')) {
-    var message = await summaryOrder(command) 
+    var message = await summaryOrderForInsert(event, command) 
     return reply(event.replyToken, message.join('\n'))
   } else if (command.includes('//cf')) {
     const quitedId = event.message.quotedMessageId
@@ -200,6 +200,136 @@ async function summarizeOrder(customerText) {
   });
 
   return JSON.parse(response.choices[0].message.content);
+}
+
+async function summaryOrderForInsert(message) {
+  const menuList = await sheet.getMenuList()
+  const menuFilter = menuList.sort((a, b) => b.length - a.length).map((item, idx)=>{
+    return {
+      name: item.order_list,
+      price: item.price,
+      keywords: (item.key_words ?? '').split(',').filter(Boolean).sort((a, b) => b.length - a.length)
+    }
+  }).sort((a, b) => b.name.length - a.name.length)
+
+
+  const lines = message.split('\n')
+  var order_list = {}
+  
+  lineLoop:
+  for (let i = 0; i < lines.length; i++) {
+    const text = lines[i]
+    
+    const find_menu = findMenuSafe(text, menuFilter)
+    if (find_menu != null) {
+      const menuName = find_menu.name
+      const price = find_menu.price
+      const match = text.match(/(\d+)(?!\s*[%.\d])/);
+      const qty = match ? parseInt(match[1], 10) : 1;
+      const order_count = (order_list[menuName]?.qty ?? 0) + qty
+
+      order_list[menuName] = {
+        'name': menuName,
+        'qty': order_count,
+        'price': price,
+        'total': (price * order_count)
+      }
+    }
+  }
+
+  var line_messages = []
+  var sheet_order = []
+  var order_total = 0
+  const order_list_key = Object.keys(order_list)
+  line_messages.push('สรุปรายการขนมและเครื่องดื่ม')
+  for(let i=0; i < order_list_key.length; i++) {
+    const order = order_list[order_list_key[i]]
+    order_total = order_total + order.total
+    sheet_order.push(order)
+    line_messages.push(` ${i+1}. ${order.name}[${order.qty}]: ${order.total}`)
+  }
+  line_messages.push(`ยอดรวมทั้งหมด: ${order_total}`)
+
+  const insert_sheet_data = sheet_order.map((item, idx) => {
+    if (idx == sheet_order.length - 1) {
+      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', order_total]
+    } else {
+      return [formatDateString(), item.name, item.qty, item.price, item.total, 'Auto', '']
+    }
+  })
+  sheet.appendData('ยอดขาย','A:G', insert_sheet_data)
+
+  return reply(event.replyToken, line_messages.join('\n'))
+}
+
+function normalizeThai(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFC')
+    .replace(/[่้๊๋์]/g, '')
+    .replace(/([ก-ฮ])์/g, '$1')
+    .replace(/[-–—]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/(.)\1{2,}/g, '$1$1');
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+function extractCandidates(input, minLen = 3) {
+  const text = normalizeThai(input);
+  const tokens = [];
+
+  for (let i = 0; i < text.length; i++) {
+    for (let j = i + minLen; j <= text.length; j++) {
+      tokens.push(text.slice(i, j));
+    }
+  }
+  return tokens;
+}
+
+function findMenuSafe(input, menus) {
+  const tokens = extractCandidates(input);
+
+  let best = null;
+
+  for (const menu of menus) {
+    for (const kw of menu.keywords) {
+      const k = normalizeThai(kw);
+
+      for (const t of tokens) {
+        if (Math.abs(t.length - k.length) > 1) continue;
+
+        const dist = levenshtein(t, k);
+        const ratio = dist / k.length;
+
+        // 🔒 threshold สำคัญ
+        if (ratio <= 0.25) {
+          if (!best || ratio < best.ratio) {
+            best = { menu, ratio };
+          }
+        }
+      }
+    }
+  }
+
+  return best ? best.menu : null;
 }
 
 function reply(token, text) {
