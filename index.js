@@ -36,8 +36,9 @@ app.use('/webhook', line.middleware(config));
 
 app.post('/webhook', (req, res) => {
   console.log("Received:", JSON.stringify(req.body));
-  forwardWebHook(req.body);
+ 
   Promise.all(req.body.events.map(handleEvent))
+    .then(() => forwardWebHook(req.body))
     .then(() => res.end())
     .catch(err => {
       console.error(err);
