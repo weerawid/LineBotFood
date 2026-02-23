@@ -72,11 +72,24 @@ async function testMessage(event) {
 }
 
 async function forwardWebHook(body) {
-  await fetch(process.env.WEB_HOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  const webhookUrl = await getConfig("WEB_HOOK_URL")
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+      timeout: 5000
+    });
+
+    if (!response.ok) {
+      console.error('Forward webhook failed:', response.status);
+    }
+
+  } catch (error) {
+    console.error('Error forwarding webhook:', error.message);
+  }
 }
 
 async function handleEvent(event) {
