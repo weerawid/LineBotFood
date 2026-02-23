@@ -35,14 +35,14 @@ const receiveMessageStore = new Map();
 app.use('/webhook', line.middleware(config));
 
 app.post('/webhook', (req, res) => {
-  console.log("Received:", req.body);
+  console.log("Received:", JSON.stringify(req.body));
+  forwardWebHook(req.body);
   Promise.all(req.body.events.map(handleEvent))
     .then(() => res.end())
     .catch(err => {
       console.error(err);
       res.status(500).end();
     });
-  forwardWebHook(req.body);
 });
 
 app.use(express.json());
