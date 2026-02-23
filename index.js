@@ -35,6 +35,7 @@ const receiveMessageStore = new Map();
 app.use('/webhook', line.middleware(config));
 
 app.post('/webhook', (req, res) => {
+  console.log("Received:", req.body);
   Promise.all(req.body.events.map(handleEvent))
     .then(() => res.end())
     .catch(err => {
