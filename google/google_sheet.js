@@ -6,6 +6,7 @@ import 'dotenv/config';
 
 const spreadsheetId = '12tlVlmmv9dEAaygF1-gm1E4EN2t_jLMjCF39Gjhv1z0';
 const googleCredentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+console.log(`log: ${googleCredentialsBase64}`)
 const decoded = Buffer
   .from(googleCredentialsBase64, 'base64')
   .toString('utf8');
