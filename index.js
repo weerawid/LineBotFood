@@ -64,21 +64,21 @@ app.post('/test-message', async (req, res) => {
 });
 
 
-async function testMessage(event) {
-  if (event.type !== 'message' || event.message.type !== 'text') return;
-  const text = event.message.text
-  var message = await summaryOrder(text) 
-  console.log(message.join('\n'))
-}
-
 async function forwardWebHook(req) {
-  const webhookUrl = await getConfig("WEB_HOOK_URL")
+  const webhookUrl = await getConfig("WEB_HOOK_URL");
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: req.headers,
-      body: req.body,
-      timeout: 5000
+      headers: {
+        'content-type': req.get('content-type') || 'application/json',
+        'x-line-signature': req.get('x-line-signature') || ''
+      },
+      body: req.rawBody || req.body, // 🔥 สำคัญ
+      signal: controller.signal
     });
 
     if (!response.ok) {
@@ -87,8 +87,11 @@ async function forwardWebHook(req) {
 
   } catch (error) {
     console.error('Error forwarding webhook:', error.message);
+  } finally {
+    clearTimeout(timeout);
   }
 }
+
 
 async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
