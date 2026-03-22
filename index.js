@@ -76,11 +76,8 @@ async function forwardWebHook(req) {
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-line-signature': req.headers['x-line-signature'], 
-      },
-      body: JSON.stringify(req.body),
+      headers: req.headers,
+      body: req.body,
       timeout: 5000
     });
 
