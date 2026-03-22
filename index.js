@@ -36,7 +36,7 @@ app.use('/webhook', line.middleware(config));
 
 app.post('/webhook', (req, res) => { 
   Promise.all(req.body.events.map(handleEvent))
-    .then(() => forwardWebHook(req.body))
+    .then(() => forwardWebHook(req))
     .then(() => res.end())
     .then(() => console.log("Received:", JSON.stringify(req.body)))
     .catch(err => {
@@ -71,15 +71,16 @@ async function testMessage(event) {
   console.log(message.join('\n'))
 }
 
-async function forwardWebHook(body) {
+async function forwardWebHook(req) {
   const webhookUrl = await getConfig("WEB_HOOK_URL")
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-line-signature': req.headers['x-line-signature'], 
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(req.body),
       timeout: 5000
     });
 
