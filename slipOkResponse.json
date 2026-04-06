@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "message": "✅",
+    "language": "TH",
+    "transRef": "016080082733BTF03465",
+    "sendingBank": "004",
+    "receivingBank": "004",
+    "transDate": "20260321",
+    "transTime": "08:27:33",
+    "transTimestamp": "2026-03-21T01:27:33.000Z",
+    "sender": {
+      "displayName": "น.ส. กนกพร ม",
+      "name": "MS. KANOKPORN M",
+      "proxy": {
+        "type": null,
+        "value": null
+      },
+      "account": {
+        "type": "BANKAC",
+        "value": "xxx-x-x4629-x"
+      }
+    },
+    "receiver": {
+      "displayName": "น.ส. ธนารักษ์ พ",
+      "name": "MS. THANALUK P",
+      "proxy": {
+        "type": "",
+        "value": ""
+      },
+      "account": {
+        "type": "BANKAC",
+        "value": "xxx-x-x2126-x"
+      }
+    },
+    "amount": 225,
+    "paidLocalAmount": 225,
+    "paidLocalCurrency": "764",
+    "countryCode": "TH",
+    "transFeeAmount": 0,
+    "ref1": "",
+    "ref2": "",
+    "ref3": "",
+    "toMerchantId": "",
+    "qrcodeData": "0041000600000101030040220016080082733BTF034655102TH9104BF37"
+  }
+}
