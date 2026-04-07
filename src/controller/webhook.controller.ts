@@ -27,22 +27,22 @@ export interface EventModel {
 export async function webhook(
   req: Request,
   res: Response
-): Promise<void> {
+){
 
   Promise.allSettled(req.body.events.map((event: any) => handleEvent(event, req.body.destination)))
     .then(async (results: PromiseSettledResult<EventModel>[]) => {
       await forwardWebhook(req)
       return results
     })
-    .then(async (results: PromiseSettledResult<EventModel>[]) => {
+    .then((results: PromiseSettledResult<EventModel>[]) => {
       for (const result of results) {
         if (result.status === "fulfilled") {
           switch (result.value.type) {
             case "message": 
-              await updateMessageEvent(result.value.event, result.value.destination)
+              updateMessageEvent(result.value.event, result.value.destination)
               break
             case "unsend":
-              await unsendMessageEvent(result.value.event, result.value.destination)
+              unsendMessageEvent(result.value.event, result.value.destination)
               break
             default:
               break
@@ -51,10 +51,10 @@ export async function webhook(
       }
       return results
     })
-    .then(async (results: PromiseSettledResult<EventModel>[]) => {
+    .then((results: PromiseSettledResult<EventModel>[]) => {
       for (const result of results) {
         if (result.status === "fulfilled") {
-          await createOrder(result.value.event)
+          createOrder(result.value.event)
         }
       }
       return results
