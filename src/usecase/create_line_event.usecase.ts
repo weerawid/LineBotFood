@@ -15,6 +15,7 @@ export default async function createLineEvent(event: Request): Promise<boolean> 
     const apiHost = config['LINE_BOT_API_HOST'] ?? reject(new AppError(ErrorKey.CONFIG_NOT_FOUND_00500, 'LINE_BOT_API_HOST'))
     const url = `${apiHost}/api/line-event/create`
     try {
+      console.log('createLineEvent Start')
       const response = await httpRequest(url, {
         method: 'POST',
         headers: {
@@ -27,6 +28,7 @@ export default async function createLineEvent(event: Request): Promise<boolean> 
           }
         )
       });
+      console.log('createLineEvent End with response', response)
       if (!response.ok) {
         resolve(false)
       } else {
