@@ -180,6 +180,9 @@ async function unsendMessageEvent(event: any, destination: string): Promise<any>
       quotedToken: undefined, 
       quotedId: undefined
     })
+    .catch((e: unknown) => {
+      console.log('unsendMessageEvent error', getErrorMessage(e))
+    })
   })
 }
 
@@ -205,6 +208,9 @@ async function updateMessageEvent(event: any, destination: string): Promise<any>
         quotedToken: event.message.quotedToken || null, 
         quotedId: event.message.quotedId || null
       })
+    })
+    .catch((e: unknown) => {
+      console.log('updateMessageEvent error', getErrorMessage(e))
     })
 }
 
