@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import { logErrorMessage } from "../common/error/error.helper.js";
-import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { ErrorKey, getErrorMessage } from '../common/error/error.app.js';
 import { httpRequestBody } from '../core/common/http.js';
 
 export interface Request {
@@ -44,10 +43,6 @@ export default async function createLineMessage(message: Request): Promise<boole
         )
       });
       if (!response.success) {
-        logErrorMessage({
-          error: response.error?.code,
-          desc: response.error?.message,
-        })
         resolve(false)
       } else {
         resolve(true)

@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import { logErrorMessage } from "../common/error/error.helper.js";
-import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { ErrorKey, getErrorMessage } from '../common/error/error.app.js';
 import { httpRequest } from '../core/common/http.js';
 
 export interface Request {
@@ -35,10 +34,6 @@ export default async function updateLineMessage(message: Request): Promise<boole
         body: JSON.stringify(Object.fromEntries(Object.entries(payload).filter(([_, v]) => v !== undefined)))
       });
       if (!response.ok) {
-        logErrorMessage({
-          error: response.status,
-          desc: response.statusText,
-        })
         resolve(false)
       } else {
         resolve(true)

@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { logErrorMessage } from "../common/error/error.helper.js";
 import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
 import { httpRequest } from '../core/common/http.js';
 
@@ -26,10 +25,6 @@ export default async function createLineEvent(event: Request): Promise<boolean> 
         )
       });
       if (!response.ok) {
-        logErrorMessage({
-          error: response.status,
-          desc: response.statusText,
-        })
         resolve(false)
       } else {
         resolve(true)
