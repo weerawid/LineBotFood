@@ -33,6 +33,7 @@ export default async function createLineEvent(event: Request): Promise<boolean> 
         resolve(true)
       }
     } catch (e: unknown){
+      console.error(e)
       reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'createLineEvent'))
     }
   })
