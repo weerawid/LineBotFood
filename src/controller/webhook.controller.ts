@@ -27,43 +27,43 @@ export interface EventModel {
 export async function webhook(
   req: Request,
   res: Response
-){
+): Promise<void> {
+  try {
+    const events = await Promise.all(
+      req.body.events.map((event: any) =>
+        handleEvent(event, req.body.destination)
+      )
+    );
 
-  Promise.allSettled(req.body.events.map((event: any) => handleEvent(event, req.body.destination)))
-    .then(async (results: PromiseSettledResult<EventModel>[]) => {
-      await forwardWebhook(req)
-      return results
-    })
-    .then((results: PromiseSettledResult<EventModel>[]) => {
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          switch (result.value.type) {
-            case "message": 
-              updateMessageEvent(result.value.event, result.value.destination)
-              break
-            case "unsend":
-              unsendMessageEvent(result.value.event, result.value.destination)
-              break
-            default:
-              break
-          }
-        }
-      }
-      return results
-    })
-    .then((results: PromiseSettledResult<EventModel>[]) => {
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          createOrder(result.value.event)
-        }
-      }
-      return results
-    })
-    .then(() => {
-      res.status(200).json({stats: 'ok'})
-    }).catch((e: unknown) => {
-      res.status(500).json(getErrorMessage(e))
-    })  
+    const validEvents = events.filter(
+      (e): e is EventModel => e !== null
+    );
+
+    res.status(200).json({ stats: 'ok' });
+
+    processEvents(validEvents, req).catch(console.error);
+
+  } catch (e: unknown) {
+    console.error(e);
+    res.status(500).json(getErrorMessage(e));
+  }
+}
+
+async function processEvents(events: EventModel[], req: Request) {
+  await forwardWebhook(req);
+
+  for (const event of events) {
+    switch (event.type) {
+      case "message":
+        await updateMessageEvent(event.event, event.destination);
+        break;
+      case "unsend":
+        await unsendMessageEvent(event.event, event.destination);
+        break;
+    }
+
+    await createOrder(event.event);
+  }
 }
 
 async function forwardWebhook(request: Request): Promise<void> {
