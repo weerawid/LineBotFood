@@ -1,6 +1,8 @@
 
 const CODE_00000_UNKNOW_ERROR = "00000";
 const CODE_00400_API_ERROR = "00400";
+const CODE_00500_CONFIG_NOT_FOUND = "00500";
+
 
 export interface ErrorInfo {
   code: string;
@@ -10,6 +12,7 @@ export interface ErrorInfo {
 export enum ErrorKey {
   UNKNOW_ERROR_00000 = "UNKNOW_ERROR_00000",
   API_UNKNOW_ERROR_00400 = "API_UNKNOW_ERROR_00400",
+  CONFIG_NOT_FOUND_00500 = "CONFIG_NOT_FOUND_00500"
 }
 
 export const ErrorMap = {
@@ -20,6 +23,10 @@ export const ErrorMap = {
   API_UNKNOW_ERROR_00400: {
     code: CODE_00400_API_ERROR,
     message: "API Error"
+  },
+  CONFIG_NOT_FOUND_00500: {
+    code: CODE_00500_CONFIG_NOT_FOUND,
+    message: "Config Not Found"
   }
 } as const satisfies Record<ErrorKey, ErrorInfo>;
 

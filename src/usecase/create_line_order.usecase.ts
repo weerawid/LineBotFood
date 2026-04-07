@@ -1,6 +1,7 @@
 import 'dotenv/config';
-import { ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
 import { httpRequestBody } from '../core/common/http.js';
+import { getContext } from '../core/context/app_context.js';
 
 export interface Request {
   item: OrderItem[];
@@ -24,7 +25,9 @@ export interface Response {
 
 export async function createLineOrder(request: Request): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
-    const apiHost = process.env.LINE_BOT_API_HOST
+    const context = await getContext();
+    const config = context.config
+    const apiHost = config['LINE_BOT_API_HOST'] ?? reject(new AppError(ErrorKey.CONFIG_NOT_FOUND_00500, 'LINE_BOT_API_HOST'))
     const url = `${apiHost}/api/line-order/create`
     try {
       const response = await httpRequestBody<Response>(url, {

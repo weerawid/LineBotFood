@@ -12,11 +12,14 @@ export interface Response {
 }
 
 export default async function getSystemSlip(): Promise<Response> {
-  const context = await getContext()
-  const config = context.config
-  const apiHost = process.env.LINE_BOT_API_HOST
+ 
+  
 
   return new Promise(async (resolve, reject) => {
+    const context = await getContext()
+    const config = context.config
+    const apiHost = config['LINE_BOT_API_HOST'] ?? reject(new AppError(ErrorKey.CONFIG_NOT_FOUND_00500, 'LINE_BOT_API_HOST'))
+    
     const url = `${apiHost}/api/system-slip`
     try {
       const response = await httpRequestBody<Response>(url, {

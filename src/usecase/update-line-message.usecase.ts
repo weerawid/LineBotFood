@@ -1,6 +1,7 @@
 import 'dotenv/config';
-import { ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
 import { httpRequest } from '../core/common/http.js';
+import { getContext } from '../core/context/app_context.js';
 
 export interface Request {
   id: string;
@@ -14,7 +15,9 @@ export interface Request {
 
 export default async function updateLineMessage(message: Request): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
-    const apiHost = process.env.LINE_BOT_API_HOST
+    const context = await getContext()
+    const config = context.config
+    const apiHost = config['LINE_BOT_API_HOST'] ?? reject(new AppError(ErrorKey.CONFIG_NOT_FOUND_00500, 'LINE_BOT_API_HOST'))
     const url = `${apiHost}/api/line-message/update/${message.id}`
     const payload = {
       id: message.id ?? undefined,
