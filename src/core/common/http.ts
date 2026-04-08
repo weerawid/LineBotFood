@@ -1,6 +1,6 @@
 import { createAppError, ErrorKey } from "../error/error.app.js";
 
-const DEFAULT_LOG = true;
+const DEFAULT_LOG = false;
 
 export async function httpRequest(
   resource: RequestInfo,
@@ -29,7 +29,7 @@ export async function httpRequest(
     throw error
   })
   console.log('httpRequest 5')
-  if (log || DEFAULT_LOG) {
+  if (log) {
     const text = await response.clone().text(); // 🔥 clone สำคัญ
     console.log('--- RESPONSE ---');
     console.log(text);
