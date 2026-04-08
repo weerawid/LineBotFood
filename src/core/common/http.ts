@@ -25,7 +25,7 @@ export async function httpRequest(
     ...options,
     signal: controller.signal
   }).catch((error) => {
-    console.error('Fetch error:', error);
+    console.log('Fetch error:', error);
     throw error
   })
   console.log('httpRequest 5')
