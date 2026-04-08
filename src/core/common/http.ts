@@ -26,7 +26,8 @@ export async function httpRequest(
     signal: controller.signal
   }).catch((error) => {
     console.error('Fetch error:', error);
-  });
+    throw error
+  })
   console.log('httpRequest 5')
   if (log || DEFAULT_LOG) {
     const text = await response.clone().text(); // 🔥 clone สำคัญ
