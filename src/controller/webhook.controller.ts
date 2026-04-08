@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { AppError, ErrorKey, getErrorMessage } from "../common/error/error.app.js";
+import { AppError, ErrorKey, getErrorMessage } from "../core/error/error.app.js";
 import createLineMessage from "../usecase/create_line_message.usecase.js";
 import createLineUser from "../usecase/create_line_user.usecase.js";
 import createLineEvent from "../usecase/create_line_event.usecase.js";
@@ -35,13 +35,19 @@ export async function webhook(
       )
     );
 
-    const validEvents = events.filter(
-      (e): e is EventModel => e !== null
-    );
+    for (const event of events) {
+      updateMessageEvent(event.event, event.destination);
+    }
 
     res.status(200).json({ stats: 'ok' });
 
-    processEvents(validEvents, req).catch(console.error);
+    // const validEvents = events.filter(
+    //   (e): e is EventModel => e !== null
+    // );
+
+    // res.status(200).json({ stats: 'ok' });
+
+    // processEvents(validEvents, req).catch(console.error);
 
   } catch (e: unknown) {
     console.error(e);

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { AppError, ErrorKey, getErrorMessage } from '../core/error/error.app.js';
 import { httpRequest } from '../core/common/http.js';
 import { getContext } from '../core/context/app_context.js';
 
@@ -42,7 +42,7 @@ export default async function updateLineMessage(message: Request): Promise<boole
         resolve(true)
       }
     } catch (e: unknown){
-      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'updateLineMessage'))
+      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_10000, 'updateLineMessage'))
     }
   })
 }

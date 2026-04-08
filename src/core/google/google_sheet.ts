@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 import { GoogleAuth } from 'google-auth-library';
 import { google, sheets_v4 } from 'googleapis';
-import { createAppError, ErrorKey } from '../../common/error/error.app.js';
+import { createAppError, ErrorKey } from '../error/error.app.js';
 
 const spreadsheetId: string = '12tlVlmmv9dEAaygF1-gm1E4EN2t_jLMjCF39Gjhv1z0';
 
@@ -116,5 +116,3 @@ export async function getImage(): Promise<Record<string, ImageConfig>> {
   );
   return configMap;
 }
-
-

@@ -1,4 +1,4 @@
-import { AppError, ErrorKey, getErrorMessage } from "../common/error/error.app.js";
+import { AppError, ErrorKey, getErrorMessage } from "../core/error/error.app.js";
 import { httpRequestBody } from "../core/common/http.js";
 import { getContext } from "../core/context/app_context.js";
 
@@ -51,7 +51,7 @@ export async function getLineOrder(request: Request): Promise<Response> {
       });
       resolve(response)
     } catch (e: unknown){
-      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'getLineOrder'))
+      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_10000, 'getLineOrder'))
     }
   })
 }

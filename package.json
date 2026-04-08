@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@libsql/client": "^0.17.2",
     "@line/bot-sdk": "^10.5.0",
     "body-parser": "^2.2.2",
     "dotenv": "^17.2.3",

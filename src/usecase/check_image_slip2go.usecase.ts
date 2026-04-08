@@ -1,4 +1,4 @@
-import { AppError, ErrorKey, getErrorMessage } from "../common/error/error.app.js";
+import { AppError, ErrorKey, getErrorMessage } from "../core/error/error.app.js";
 import { removeUndefined, toBodyInit } from "../common/utils/object.js";
 import { httpRequestBody } from "../core/common/http.js";
 
@@ -79,7 +79,7 @@ export default async function checkImageSlip2Go(slip: Request): Promise<Response
       });
       resolve(response)
     } catch (e: unknown){
-      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'checkImageSlip2Go'))
+      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_10000, 'checkImageSlip2Go'))
     }
   })
 }

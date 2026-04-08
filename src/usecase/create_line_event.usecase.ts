@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { AppError, ErrorKey, getErrorMessage } from '../core/error/error.app.js';
 import { httpRequest } from '../core/common/http.js';
 import { getContext } from '../core/context/app_context.js';
 
@@ -36,7 +36,7 @@ export default async function createLineEvent(event: Request): Promise<boolean> 
       }
     } catch (e: unknown){
       console.error(e)
-      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'createLineEvent'))
+      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_10000, 'createLineEvent'))
     }
   })
 }

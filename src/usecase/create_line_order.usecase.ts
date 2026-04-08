@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { AppError, ErrorKey, getErrorMessage } from '../common/error/error.app.js';
+import { AppError, ErrorKey, getErrorMessage } from '../core/error/error.app.js';
 import { httpRequestBody } from '../core/common/http.js';
 import { getContext } from '../core/context/app_context.js';
 
@@ -53,7 +53,7 @@ export async function createLineOrder(request: Request): Promise<boolean> {
         resolve(true)
       }
     } catch (e: unknown){
-      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_00400, 'createLineOrder'))
+      reject(getErrorMessage(e, ErrorKey.API_UNKNOW_ERROR_10000, 'createLineOrder'))
     }
   })
 }

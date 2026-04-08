@@ -1,4 +1,4 @@
-import { createAppError, ErrorKey } from "../../common/error/error.app.js";
+import { createAppError, ErrorKey } from "../error/error.app.js";
 
 const DEFAULT_LOG = true;
 
@@ -8,31 +8,32 @@ export async function httpRequest(
   timeout: number = 5000,
   log: boolean = false
 ): Promise<Response> {
-
+  console.log('httpRequest 1')
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
-
+  console.log('httpRequest 2')
   const safeOptions = {
     ...options,
     body: truncateLargeValues(options.body)
   } as RequestInit;
-
+  console.log('httpRequest 3')
   if (log || DEFAULT_LOG) {
     console.log(toCurl(resource, safeOptions));
   }
-
+  console.log('httpRequest 4')
   const response = await fetch(resource, {
     ...options,
     signal: controller.signal
   });
-
+  console.log('httpRequest 5')
   if (log || DEFAULT_LOG) {
     const text = await response.clone().text(); // 🔥 clone สำคัญ
     console.log('--- RESPONSE ---');
     console.log(text);
   }
-
+  console.log('httpRequest 6')
   clearTimeout(id);
+  console.log('httpRequest 7', response)
   return response;
 }
 
