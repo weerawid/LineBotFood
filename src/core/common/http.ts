@@ -24,6 +24,8 @@ export async function httpRequest(
   const response = await fetch(resource, {
     ...options,
     signal: controller.signal
+  }).catch((error) => {
+    console.error('Fetch error:', error);
   });
   console.log('httpRequest 5')
   if (log || DEFAULT_LOG) {
